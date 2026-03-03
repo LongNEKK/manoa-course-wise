@@ -1,6 +1,6 @@
 ![](https://github.com/ics-software-engineering/nextjs-application-template/raw/main/doc/landing-page.png)
 
-nextjs-application-template is a sample Next.js 14 application that illustrates:
+nextjs-application-template is a sample Next.js 16 application that illustrates:
 
 - A standard directory layout using 'src/' as recommended in the [Next.js Project Structure](https://nextjs.org/docs/getting-started/project-structure) guide.
 - [Bootstrap 5 React](https://react-bootstrap.github.io/) for user interface.
@@ -8,7 +8,7 @@ nextjs-application-template is a sample Next.js 14 application that illustrates:
 - Authorization, authentication, and registration using [NextAuth.js](https://next-auth.js.org/).
 - Initialization of users and data from a settings file.
 - Alerts regarding success or failure of DB updates using [Sweet Alert](https://sweetalert.js.org/).
-- Quality assurance using [ESLint](http://eslint.org) with packages to partially enforce the [Next.js ESLint rules](https://nextjs.org/docs/app/building-your-application/configuring/eslint) and the [AirBnB Javascript Style Guide](https://github.com/airbnb/javascript).
+- Quality assurance using [ESLint](http://eslint.org) with packages to partially enforce the [Next.js ESLint rules](https://nextjs.org/docs/app/building-your-application/configuring/eslint).
 
 The goal of this template is to help you get quickly started doing Next.js development by providing a reasonable directory structure for development and deployment, a set of common extensions to the core framework, and boilerplate code to implement basic page display, navigation, forms, roles, and database manipulation.
 
@@ -32,7 +32,7 @@ $
 
 ```
 
-Second, go to [https://github.com/ics-software-engineering/nextjs-application-template](https://github.com/ics-software-engineering/nextjs-application-template), and click the "Use this template" button. Complete the dialog box to create a new repository that you own that is initialized with this template's files.
+Second, go to [https://github.com/ics-software-engineering/nextjs-application-template](https://github.com/ics-software-engineering/nextjs-application-template-26), and click the "Use this template" button. Complete the dialog box to create a new repository that you own that is initialized with this template's files.
 
 Third, go to your newly created repository, and click the "Clone or download" button to download your new GitHub repo to your local file system. Using [GitHub Desktop](https://desktop.github.com/) is a great choice if you use MacOS or Windows.
 
@@ -47,44 +47,42 @@ $ npm install
 Fifth, create a `.env` file from the `sample.env`. Set the `DATABASE_URL` variable to match your PostgreSQL database that you created in the first step. See the Prisma docs [Connect your database](https://www.prisma.io/docs/getting-started/setup-prisma/add-to-existing-project/relational-databases/connect-your-database-typescript-postgresql). Then run the Prisma migration `npx prisma migrate dev` to set up the PostgreSQL tables.
 
 ```
-
 $ npx prisma migrate dev
-Environment variables loaded from .env
-Prisma schema loaded from prisma/schema.prisma
-Datasource "db": PostgreSQL database "<your database name>", schema "public" at "localhost:5432"
+Loaded Prisma config from prisma.config.ts.
 
-Applying migration `20240708195109_init`
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "mydb", schema "public" at "localhost:5432"
+
+Applying migration `20260301195634_init`
 
 The following migration(s) have been applied:
 
 migrations/
-└─ 20240708195109_init/
-└─ migration.sql
+  └─ 20260301195634_init/
+    └─ migration.sql
 
 Your database is now in sync with your schema.
-
-✔ Generated Prisma Client (v5.16.1) to ./node_modules/@prisma/client in 51ms
 
 $
 
 ```
 
-Then seed the database with the `/config/settings.development.json` data using `npx prisma db seed`.
+Then seed the database with the `/config/settings.development.json` data using `npm run seed`.
 
 ```
 
-$ npx prisma db seed
-Environment variables loaded from .env
-Running seed command `ts-node --compiler-options {"module":"CommonJS"} prisma/seed.ts` ...
-Seeding the database
-Creating user: admin@foo.com with role: ADMIN
-Creating user: john@foo.com with role: USER
-Adding stuff: Basket (john@foo.com)
-Adding stuff: Bicycle (john@foo.com)
-Adding stuff: Banana (admin@foo.com)
-Adding stuff: Boogie Board (admin@foo.com)
+$ npm run seed  
 
-🌱 The seed command has been executed.
+> nextjs-application-template-s26@0.1.0 seed
+> npx tsx src/seed.ts
+
+Seeding the database
+  Creating user: admin@foo.com with role: ADMIN
+  Creating user: john@foo.com with role: USER
+  Adding stuff: {"name":"Basket","quantity":3,"owner":"john@foo.com","condition":"excellent"}
+  Adding stuff: {"name":"Bicycle","quantity":2,"owner":"john@foo.com","condition":"poor"}
+  Adding stuff: {"name":"Banana","quantity":2,"owner":"admin@foo.com","condition":"good"}
+  Adding stuff: {"name":"Boogie Board","quantity":2,"owner":"admin@foo.com","condition":"excellent"}
 $
 
 ```
@@ -97,16 +95,16 @@ Once the libraries are installed and the database seeded, you can run the applic
 
 $ npm run dev
 
-> nextjs-application-template-1@0.1.0 dev
+> nextjs-application-template-s26@0.1.0 dev
 > next dev
 
-▲ Next.js 14.2.4
-
-- Local: http://localhost:3000
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://XXX.XXX.XXX.XXX:3000
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1619ms
+✓ Ready in 821ms
 
 ```
 
