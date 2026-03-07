@@ -1,8 +1,12 @@
-/* eslint-disable arrow-body-style */
 import { compare } from 'bcrypt';
 import { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
+
+type AuthUser = {
+  id: string;
+  randomKey: string;
+};
 
 const authOptions: NextAuthOptions = {
   session: {
@@ -67,7 +71,7 @@ const authOptions: NextAuthOptions = {
     jwt: ({ token, user }) => {
       // console.log('JWT Callback', { token, user })
       if (user) {
-        const u = user as unknown as any;
+        const u = user as AuthUser;
         return {
           ...token,
           id: u.id,

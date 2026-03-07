@@ -1,5 +1,3 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable import/no-extraneous-dependencies */
 import { test as base, expect, Page } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
@@ -44,7 +42,6 @@ async function authenticateWithUI(
         page.getByRole('button', { name: email }).isVisible().then((visible) => visible),
         page.getByText('Sign out').isVisible().then((visible) => visible),
         page.getByRole('button', { name: 'Sign out' }).isVisible().then((visible) => visible),
-        // eslint-disable-next-line no-promise-executor-return
         new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 3000)),
       ]);
 
@@ -92,7 +89,6 @@ async function authenticateWithUI(
         page.getByRole('button', { name: email }).isVisible().then((visible) => ({ success: visible })),
         page.getByText('Sign out').isVisible().then((visible) => ({ success: visible })),
         page.getByRole('button', { name: 'Sign out' }).isVisible().then((visible) => ({ success: visible })),
-        // eslint-disable-next-line no-promise-executor-return
         new Promise<{ success: boolean }>((resolve) => setTimeout(() => resolve({ success: false }), 5000)),
       ]);
 
@@ -129,7 +125,7 @@ async function fillFormWithRetry(
         await element.fill(field.value);
         await element.evaluate((el) => el.blur()); // Trigger blur event
         break;
-      } catch (error) {
+      } catch {
         attempts++;
         if (attempts >= maxAttempts) {
           throw new Error(`Failed to fill field ${field.selector} after ${maxAttempts} attempts`);
@@ -142,7 +138,7 @@ async function fillFormWithRetry(
 
 // Create custom test with authenticated fixtures
 export const test = base.extend<AuthFixtures>({
-  getUserPage: async ({ browser }, use) => {
+  getUserPage: async ({ browser }, fixtureCallback) => {
     const createUserPage = async (email: string, password: string) => {
       const context = await browser.newContext();
       const page = await context.newPage();
@@ -151,7 +147,7 @@ export const test = base.extend<AuthFixtures>({
       return page;
     };
 
-    await use(createUserPage);
+    await fixtureCallback(createUserPage);
   },
 });
 
