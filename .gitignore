@@ -46,8 +46,11 @@ next-env.d.ts
 .env
 /generated/prisma
 
-# Playwright
+# installed packages
 node_modules/
+package-lock.json
+
+# Playwright
 /test-results/
 /playwright-report/
 /blob-report/
