@@ -129,8 +129,27 @@ $ npm run dev
 
 If all goes well, the template application will appear at [http://localhost:3000](http://localhost:3000). You can login using the credentials in [settings.development.json](https://github.com/ics-software-engineering/nextjs-application-template/blob/main/config/settings.development.json), or else register a new account.
 
-### ESLint
 
+### Building the App
+
+To build the application for production deployment, use the following command:
+
+```bash
+$ npm run build
+```
+
+This will compile the Next.js application and output the production build to the `.next/` directory.
+
+After building, you can start the production server with:
+
+```bash
+$ npm start
+```
+
+Make sure your environment variables and database are properly configured before building for production.
+
+
+### ESLint
 You can verify that the code obeys our coding standards by running ESLint over the code in the src/ directory with:
 
 ```
@@ -141,6 +160,44 @@ $ npm run lint
 
 ✔ No ESLint warnings or errors
 $
+
+### Testing
+This project uses [Playwright](https://playwright.dev/) for end-to-end and authentication testing. Tests are located in the `tests/` directory and cover user flows, authentication, and admin features.
+
+**Important:** The application server must be running before you execute Playwright tests. Start the server in a separate terminal using:
+
+```
+$ npm run dev
+```
+or if you have built previously
+```
+$ npm start
+```
+
+To run all tests:
+
+```
+$ npx playwright test
+```
+
+You can run tests for a specific file:
+
+```
+$ npx playwright test tests/john-pages.spec.ts
+```
+
+To view tests in headed mode (see the browser UI):
+
+```
+$ npx playwright test --headed
+```
+
+Test best practices:
+- Tests wait for key UI elements after login to ensure reliability across browsers.
+- Authentication is handled with robust session management and UI checks.
+- See `tests/auth-utils.ts` for custom authentication helpers.
+
+For more information, see the [Playwright documentation](https://playwright.dev/).
 ```
 
 ## Walkthrough
@@ -314,7 +371,6 @@ To provide a simple example of a "super power" for Admin users, the Admin page l
 ![](https://github.com/ics-software-engineering/nextjs-application-template/raw/main/doc/admin-list-stuff-page.png)
 
 Note that non-admin users cannot get to this page, even if they type in the URL by hand.
-
 ### Tables
 
 The application implements two tables "Stuff" and "User". Each Stuff row has the following columns: id, name, quantity, condition, and owner. The User table has the following columns: id, email, password (hashed using bcrypt), role.
