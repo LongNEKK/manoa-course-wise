@@ -164,14 +164,6 @@ Make sure your environment variables and database are properly configured before
 ### Testing
 This project uses [Playwright](https://playwright.dev/) for end-to-end and authentication testing. Tests are located in the `tests/` directory and cover user flows, authentication, and admin features.
 
-```
-$ npm run dev
-```
-or if you have built previously
-```
-$ npm start
-```
-
 To run all tests:
 
 ```
@@ -191,7 +183,7 @@ $ npx playwright test --headed
 ```
 
 For more information, see the [Playwright documentation](https://playwright.dev/).
-```
+
 
 ## Walkthrough
 
