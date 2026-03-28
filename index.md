@@ -429,6 +429,54 @@ ESLint should run without generating any errors.
 
 It's significantly easier to do development with ESLint integrated directly into your IDE (such as VSCode).
 
+
+#### Playwright End-to-End Testing
+
+This project uses [Playwright](https://playwright.dev/) for end-to-end and authentication testing. Playwright tests are located in the `tests/` directory and cover user flows, authentication, and admin features. These tests help ensure that the application works as expected from the user's perspective and that critical workflows are protected against regressions.
+
+**How to run Playwright tests:**
+
+- To run all tests:
+
+  ```
+  npx playwright test
+  ```
+
+- To run tests for a specific file:
+
+  ```
+  npx playwright test tests/john-pages.spec.ts
+  ```
+
+- To view tests in headed mode (see the browser UI):
+
+  ```
+  npx playwright test --headed
+  ```
+
+For more information, see the [Playwright documentation](https://playwright.dev/).
+
+
+#### Continuous Integration (CI)
+
+Continuous Integration is implemented using GitHub Actions. The workflow is defined in `.github/workflows/ci.yml` and runs automatically on every push or pull request to the `main` or `master` branches.
+
+The CI workflow performs the following steps:
+
+- Checks out the repository code.
+- Sets up Node.js and installs dependencies.
+- Installs Playwright browsers and dependencies.
+- Generates the Prisma client and runs database migrations.
+- Seeds the test database.
+- Runs ESLint to check code quality.
+- Builds the Next.js application.
+- Runs Playwright end-to-end tests.
+- Uploads the Playwright test report as a workflow artifact for review.
+
+The workflow uses a PostgreSQL service for testing and sets environment variables for the test environment. You can view and download the Playwright test report from the workflow run's summary page in GitHub Actions.
+
+For details, see the [`ci.yml` workflow file](.github/workflows/ci.yml).
+
 <!--
 ## Screencasts
 
