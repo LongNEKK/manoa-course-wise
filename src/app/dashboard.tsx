@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import UserDashboard from '../components/UserDashboard';
+import UserDashboard, { User } from '../components/UserDashboard';
+
 
 const DashboardPage = () => {
   const { data: session, status } = useSession();
@@ -23,7 +25,7 @@ const DashboardPage = () => {
     return null; // redirecting
   }
 
-  return <UserDashboard user={session.user} />;
+  return <UserDashboard user={session.user as User}/>
 };
 
 export default DashboardPage;
