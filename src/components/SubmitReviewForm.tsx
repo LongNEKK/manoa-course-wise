@@ -11,6 +11,7 @@ import { addReview } from '@/lib/dbActions';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { SubmitReviewSchema } from '@/lib/validationSchemas';
 import { courseData } from '@/lib/courseData';
+import styles from './SubmitReviewForm.module.css';
 
 const tagOptions = [
   'Homework heavy',
@@ -20,20 +21,77 @@ const tagOptions = [
   'Challenging',
   'Easy grading',
 ];
-const onSubmit = async (data: any) => {
-  const selectedTags = data.tags ? (Array.isArray(data.tags) ? data.tags : [data.tags]) : [];
-  await addReview({
-    courseCode: data.courseCode,
-    professor: data.professor,
-    rating: Number(data.rating),
-    text: data.text,
-    anonymous: Boolean(data.anonymous),
-    authorEmail: data.anonymous ? null : data.authorEmail,
-    tags: selectedTags,
-  });
-  swal('Success', 'Your review has been submitted', 'success', {
-    timer: 2000,
-  });
+
+const tagColors = [
+  '#e8f5f0', // light green
+  '#f0f8ff', // light blue
+  '#fff8e1', // light yellow
+  '#ffebee', // light red
+  '#f3e5f5', // light purple
+  '#fce4ec', // light pink
+];
+
+const semesterOptions = [
+  'Fall 2023',
+  'Spring 2024',
+  'Summer 2024',
+  'Fall 2024',
+  'Spring 2025',
+  'Summer 2025',
+  'Fall 2025',
+  'Spring 2026',
+];
+
+const StarRating: React.FC<{ value: number; onChange: (value: number) => void }> = ({ value, onChange }) => {
+  const handleClick = (index: number, half: boolean) => {
+    const newValue = index + (half ? 0.5 : 1);
+    onChange(newValue);
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: '2px' }}>
+      {Array.from({ length: 5 }, (_, i) => {
+        const isFull = value >= i + 1;
+        const isHalf = value >= i + 0.5 && value < i + 1;
+        return (
+          <div key={i} style={{ position: 'relative', cursor: 'pointer' }}>
+            <span
+              style={{ fontSize: '24px', color: '#ddd' }}
+              onClick={() => handleClick(i, false)}
+            >
+              ★
+            </span>
+            <span
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '50%',
+                overflow: 'hidden',
+                fontSize: '24px',
+                color: '#ffc107',
+              }}
+              onClick={() => handleClick(i, true)}
+            >
+              {isHalf || isFull ? '★' : ''}
+            </span>
+            <span
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                fontSize: '24px',
+                color: isFull ? '#ffc107' : isHalf ? '#ffc107' : '#ddd',
+              }}
+              onClick={() => handleClick(i, false)}
+            >
+              ★
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 const SubmitReviewForm: React.FC = () => {
@@ -59,6 +117,29 @@ const SubmitReviewForm: React.FC = () => {
     defaultValues: { anonymous: false, authorEmail: currentUser },
   });
 
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [rating, setRating] = useState<number>(0);
+
+  const onSubmit = async (data: any, selectedTags: string[]) => {
+    await addReview({
+      courseCode: data.courseCode,
+      professor: data.professor,
+      rating: rating,
+      text: data.text,
+      anonymous: Boolean(data.anonymous),
+      authorEmail: data.anonymous ? null : data.authorEmail,
+      tags: selectedTags,
+      semesterTaken: data.semesterTaken || null,
+    });
+    swal('Success', 'Your review has been submitted', 'success', {
+      timer: 2000,
+    });
+  };
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  };
+
   if (status === 'loading') {
     return <LoadingSpinner />;
   }
@@ -67,20 +148,22 @@ const SubmitReviewForm: React.FC = () => {
   }
 
   return (
-    <Container className="py-3">
-      <Row className="justify-content-center">
-        <Col xs={8}>
-          <Col className="text-center">
-            <h2>Submit Review</h2>
-          </Col>
-          <Card>
-            <Card.Body>
-              <Form onSubmit={handleSubmit(onSubmit)}>
+    <div className={styles.heroSection}>
+      <div className={styles.heroContent}>
+        <Container className="py-3">
+          <Row className="justify-content-center">
+            <Col xs={8}>
+              <Col className="text-center">
+                <h2 className={styles.formTitle}>Submit Review</h2>
+              </Col>
+              <Card className={styles.formCard}>
+                <Card.Body className={styles.cardBody}>
+                  <Form onSubmit={handleSubmit((d) => onSubmit(d, selectedTags))}>
                 <Form.Group>
                   <Form.Label>Course</Form.Label>
                   <select
                     {...register('courseCode')}
-                    className={`form-control ${errors.courseCode ? 'is-invalid' : ''}`}
+                    className={`form-select ${errors.courseCode ? 'is-invalid' : ''}`}
                     onChange={(e) => {
                       const code = e.target.value;
                       const found = courseData.find((c) => c.code === code);
@@ -98,7 +181,7 @@ const SubmitReviewForm: React.FC = () => {
 
                 <Form.Group>
                   <Form.Label>Professor</Form.Label>
-                  <select {...register('professor')} className={`form-control ${errors.professor ? 'is-invalid' : ''}`}>
+                  <select {...register('professor')} className={`form-select ${errors.professor ? 'is-invalid' : ''}`}>
                     {professors.map((p) => (
                       <option key={p} value={p}>
                         {p}
@@ -109,14 +192,20 @@ const SubmitReviewForm: React.FC = () => {
                 </Form.Group>
 
                 <Form.Group>
-                  <Form.Label>Rating</Form.Label>
-                  <select {...register('rating')} className={`form-control ${errors.rating ? 'is-invalid' : ''}`}>
-                    <option value={5}>5</option>
-                    <option value={4}>4</option>
-                    <option value={3}>3</option>
-                    <option value={2}>2</option>
-                    <option value={1}>1</option>
+                  <Form.Label>Semester Taken</Form.Label>
+                  <select {...register('semesterTaken')} className="form-select">
+                    <option value="">Select a semester (optional)</option>
+                    {semesterOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
                   </select>
+                </Form.Group>
+
+                <Form.Group>
+                  <Form.Label>Rating</Form.Label>
+                  <StarRating value={rating} onChange={setRating} />
                   <div className="invalid-feedback">{errors.rating?.message}</div>
                 </Form.Group>
 
@@ -127,35 +216,50 @@ const SubmitReviewForm: React.FC = () => {
                 </Form.Group>
 
                 <Form.Group className="pt-2">
-                  <Form.Check type="checkbox" label="Post anonymously" {...register('anonymous')} />
+                  <Form.Check
+                    type="switch"
+                    id="post-anon-switch"
+                    label="Post anonymously"
+                    {...register('anonymous')}
+                  />
                 </Form.Group>
 
-                <Form.Group className="pt-3">
+                <Form.Group className="pt-2">
                   <Form.Label>Tags</Form.Label>
-                  <div>
-                    {tagOptions.map((t) => (
-                      <Form.Check
-                        key={t}
-                        type="checkbox"
-                        label={t}
-                        value={t}
-                        {...register('tags')}
-                      />
-                    ))}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                    {tagOptions.map((t, index) => {
+                      const selected = selectedTags.includes(t);
+                      const color = tagColors[index % tagColors.length];
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => toggleTag(t)}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: 16,
+                            border: selected ? '1px solid #0b6b61' : `1px solid ${color}`,
+                            background: selected ? '#20a084' : color,
+                            color: selected ? 'white' : '#333',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })}
                   </div>
                 </Form.Group>
 
                 <input type="hidden" {...register('authorEmail')} value={currentUser} />
 
                 <Form.Group className="form-group">
-                  <Row className="pt-3">
-                    <Col>
-                      <Button type="submit" variant="primary">
+                  <Row className="pt-3 justify-content-center">
+                    <Col xs="auto">
+                      <Button type="submit" variant="success" className={`${styles.submitButton} me-3`}>
                         Submit
                       </Button>
-                    </Col>
-                    <Col>
-                      <Button type="button" onClick={() => reset()} variant="warning" className="float-right">
+                      <Button type="button" onClick={() => { reset(); setSelectedTags([]); setRating(0); }} variant="outline-secondary">
                         Reset
                       </Button>
                     </Col>
@@ -167,7 +271,10 @@ const SubmitReviewForm: React.FC = () => {
         </Col>
       </Row>
     </Container>
+      </div>
+    </div>
   );
 };
 
 export default SubmitReviewForm;
+

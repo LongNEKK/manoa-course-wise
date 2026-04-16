@@ -75,6 +75,7 @@ export async function addReview(review: {
   anonymous: boolean;
   authorEmail?: string | null;
   tags?: string[];
+  semesterTaken?: string | null;
 }) {
   await prisma.review.create({
     data: {
@@ -85,6 +86,7 @@ export async function addReview(review: {
       anonymous: review.anonymous,
       authorEmail: review.anonymous ? null : review.authorEmail ?? null,
       tags: review.tags ?? [],
+      semesterTaken: review.semesterTaken ?? null,
     },
   });
   // After adding, redirect to the list page (change as needed)

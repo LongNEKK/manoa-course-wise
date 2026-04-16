@@ -23,4 +23,5 @@ export const SubmitReviewSchema = Yup.object({
   anonymous: Yup.boolean().required(),
   authorEmail: Yup.string().email().nullable(),
   tags: Yup.array().of(Yup.string()),
+  semesterTaken: Yup.string().nullable(),
 });
