@@ -3,19 +3,24 @@
 import { signIn } from 'next-auth/react'; // v5 compatible
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
 import * as Yup from 'yup';
-import { Card, Col, Container, Button, Form, Row } from 'react-bootstrap';
+import { useRouter } from 'next/navigation';
 import { createUser } from '@/lib/dbActions';
+import '../auth.css';
 
 type SignUpForm = {
   email: string;
   password: string;
   confirmPassword: string;
-  // acceptTerms: boolean;
 };
 
 /** The sign up page. */
 const SignUp = () => {
+  const router = useRouter();
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
   const validationSchema = Yup.object().shape({
     email: Yup.string().required('Email is required').email('Email is invalid'),
     password: Yup.string()
@@ -37,73 +42,136 @@ const SignUp = () => {
   });
 
   const onSubmit = async (data: SignUpForm) => {
-    // console.log(JSON.stringify(data, null, 2));
-    await createUser(data);
-    // After creating, signIn with redirect to the add page
-    await signIn('credentials', { callbackUrl: '/add', ...data });
+    try {
+      setIsLoading(true);
+      setError('');
+
+      // Create the user
+      await createUser(data);
+
+      // Sign in after successful creation
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Account created but sign in failed. Please try signing in manually.');
+        setIsLoading(false);
+      } else if (result?.ok) {
+        // Redirect to add page
+        router.push('/add');
+      }
+    } catch (err) {
+      setError('An error occurred during sign up. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
-    <main>
-      <Container>
-        <Row className="justify-content-center">
-          <Col xs={5}>
-            <h1 className="text-center">Sign Up</h1>
-            <Card>
-              <Card.Body>
-                <Form onSubmit={handleSubmit(onSubmit)}>
-                  <Form.Group className="form-group">
-                    <Form.Label>Email</Form.Label>
-                    <input
-                      type="text"
-                      {...register('email')}
-                      className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                    />
-                    <div className="invalid-feedback">{errors.email?.message}</div>
-                  </Form.Group>
+    <main className="auth-container">
+      <div className="auth-content">
+        <div className="auth-card">
+          <div className="auth-card-header">
+            <h1 className="auth-card-title">Create Account</h1>
+            <p className="auth-card-subtitle">Join Mānoa CourseWise today</p>
+          </div>
 
-                  <Form.Group className="form-group">
-                    <Form.Label>Password</Form.Label>
-                    <input
-                      type="password"
-                      {...register('password')}
-                      className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                    />
-                    <div className="invalid-feedback">{errors.password?.message}</div>
-                  </Form.Group>
-                  <Form.Group className="form-group">
-                    <Form.Label>Confirm Password</Form.Label>
-                    <input
-                      type="password"
-                      {...register('confirmPassword')}
-                      className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
-                    />
-                    <div className="invalid-feedback">{errors.confirmPassword?.message}</div>
-                  </Form.Group>
-                  <Form.Group className="form-group py-3">
-                    <Row>
-                      <Col>
-                        <Button type="submit" className="btn btn-primary">
-                          Register
-                        </Button>
-                      </Col>
-                      <Col>
-                        <Button type="button" onClick={() => reset()} className="btn btn-warning float-right">
-                          Reset
-                        </Button>
-                      </Col>
-                    </Row>
-                  </Form.Group>
-                </Form>
-              </Card.Body>
-              <Card.Footer>
-                Already have an account?
-                <a href="/auth/signin">Sign in</a>
-              </Card.Footer>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+          <form onSubmit={handleSubmit(onSubmit)} style={{ padding: '30px' }}>
+            {error && <div className="auth-error-alert">{error}</div>}
+
+            <div className="auth-form-group">
+              <label className="auth-form-label">Email Address</label>
+              <input
+                type="email"
+                {...register('email')}
+                className={`auth-form-input ${errors.email ? 'is-invalid' : ''}`}
+                placeholder="you@example.com"
+                disabled={isLoading}
+                autoComplete="email"
+              />
+              {errors.email && (
+                <span className="auth-error-message">{errors.email.message}</span>
+              )}
+            </div>
+
+            <div className="auth-form-group">
+              <label className="auth-form-label">Password</label>
+              <input
+                type="password"
+                {...register('password')}
+                className={`auth-form-input ${errors.password ? 'is-invalid' : ''}`}
+                placeholder="Min. 6 characters"
+                disabled={isLoading}
+                autoComplete="new-password"
+              />
+              {errors.password && (
+                <span className="auth-error-message">{errors.password.message}</span>
+              )}
+            </div>
+
+            <div className="auth-form-group">
+              <label className="auth-form-label">Confirm Password</label>
+              <input
+                type="password"
+                {...register('confirmPassword')}
+                className={`auth-form-input ${
+                  errors.confirmPassword ? 'is-invalid' : ''
+                }`}
+                placeholder="Re-enter your password"
+                disabled={isLoading}
+                autoComplete="new-password"
+              />
+              {errors.confirmPassword && (
+                <span className="auth-error-message">
+                  {errors.confirmPassword.message}
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '25px' }}>
+              <button
+                type="submit"
+                className="auth-submit-button"
+                style={{ flex: 1 }}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="auth-spinner" />
+                    Creating account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  reset();
+                  setError('');
+                }}
+                className="auth-submit-button"
+                style={{
+                  flex: 1,
+                  backgroundColor: '#999',
+                }}
+                disabled={isLoading}
+              >
+                Clear
+              </button>
+            </div>
+          </form>
+
+          <div className="auth-card-footer">
+            Already have an account?{' '}
+            <a href="/auth/signin" className="auth-link">
+              Sign in
+            </a>
+          </div>
+        </div>
+      </div>
     </main>
   );
 };
