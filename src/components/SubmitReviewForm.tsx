@@ -97,16 +97,7 @@ const StarRating: React.FC<{ value: number; onChange: (value: number) => void }>
 const SubmitReviewForm: React.FC = () => {
   const { data: session, status } = useSession();
   const currentUser = session?.user?.email || '';
-  const [professors, setProfessors] = useState<string[]>([]);
-
-  useEffect(() => {
-    // set default professors based on default course (if any)
-    const defaultCourse = courseData[0]?.code;
-    if (defaultCourse) {
-      const found = courseData.find((c) => c.code === defaultCourse);
-      setProfessors(found?.professors ?? []);
-    }
-  }, []);
+  const [professors, setProfessors] = useState<string[]>(courseData[0]?.professors ?? []);
   const {
     register,
     handleSubmit,
@@ -120,7 +111,16 @@ const SubmitReviewForm: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [rating, setRating] = useState<number>(0);
 
-  const onSubmit = async (data: any, selectedTags: string[]) => {
+  type ReviewFormData = {
+    courseCode: string;
+    professor: string;
+    text: string;
+    anonymous: boolean;
+    authorEmail?: string | null;
+    semesterTaken?: string | null;
+  };
+
+  const onSubmit = async (data: ReviewFormData, selectedTags: string[]) => {
     await addReview({
       courseCode: data.courseCode,
       professor: data.professor,
